@@ -13,7 +13,6 @@
   width: 100%;
   min-height: 100vh;   /* ✅ important */
   display: flex;
-  margin-top: 6%;
 }
 .sec{
   width: 50%;
