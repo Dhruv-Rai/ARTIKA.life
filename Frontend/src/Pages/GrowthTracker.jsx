@@ -1,6 +1,8 @@
 import React from 'react';
 import './GrowthTracker.css';
-import DarkVeil from "../Components/Backgrounds/DarkVeil"
+import DarkVeil from "../Components/Backgrounds/DarkVeil";
+import Header from "../Components/FixedComponents/Header";
+
 export default function GrowthTracker() {
     return (
         <div className="reminder-container page">
@@ -12,10 +14,11 @@ export default function GrowthTracker() {
                 scanlineFrequency={0}
                 warpAmount={0}
             />
+            <Header />
             <div className='content'>
                 <h1>GrowthTracker</h1>
             </div>
-            
+           
         </div>
     );
 }

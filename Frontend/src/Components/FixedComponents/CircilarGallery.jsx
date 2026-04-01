@@ -334,13 +334,13 @@ class App {
   }
   createMedias(items, bend = 1, textColor, borderRadius, font) {
     const defaultItems = [
-      { image: `https://picsum.photos/seed/1/800/600?grayscale`, text: 'MediBot' },
-      { image: `https://picsum.photos/seed/2/800/600?grayscale`, text: 'DocMap' },
-      { image: `https://picsum.photos/seed/3/800/600?grayscale`, text: 'Vaccination Tracking' },
-      { image: `https://picsum.photos/seed/4/800/600?grayscale`, text: 'Growth Centre' },
-      { image: `https://picsum.photos/seed/5/800/600?grayscale`, text: 'Health Locker' },
-      { image: `https://picsum.photos/seed/16/800/600?grayscale`, text: 'Emergency' },
-      { image: `https://picsum.photos/seed/17/800/600?grayscale`, text: 'Medication Reminders' },
+      { image: `https://images.pexels.com/photos/2599244/pexels-photo-2599244.jpeg`, text: 'MediBot' },
+      { image: `https://images.pexels.com/photos/16063432/pexels-photo-16063432.jpeg`, text: 'DocMap' },
+      { image: `https://images.pexels.com/photos/6823417/pexels-photo-6823417.jpeg`, text: 'Vaccination Tracking' },
+      { image: `https://images.pexels.com/photos/590011/pexels-photo-590011.jpeg`, text: 'Growth Centre' },
+      { image: `https://images.pexels.com/photos/36740854/pexels-photo-36740854.jpeg`, text: 'Health Locker' },
+      { image: `https://images.pexels.com/photos/35886107/pexels-photo-35886107.jpeg`, text: 'Emergency' },
+      { image: `https://images.pexels.com/photos/9742739/pexels-photo-9742739.jpeg`, text: 'Medication Reminders' },
   
     ];
     const galleryItems = items && items.length ? items : defaultItems;

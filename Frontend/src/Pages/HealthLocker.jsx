@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import "./HealthLocker.css";
-import DotGrid from "../Components/Backgrounds/DotGrid";
 import Header from "../Components/FixedComponents/Header";
-import Footer from "../Components/FixedComponents/Footer";
 export default function HealthLocker() {
 
   const [docs, setDocs] = useState({
@@ -10,6 +8,19 @@ export default function HealthLocker() {
     lab: [],
     insurance: []
   });
+
+  const [openSections, setOpenSections] = useState({
+    prescription: true,
+    lab: false,
+    insurance: false
+  });
+
+  const toggleSection = (type) => {
+    setOpenSections(prev => ({
+      ...prev,
+      [type]: !prev[type]
+    }));
+  };
 
   const [preview, setPreview] = useState(null);
 
@@ -47,12 +58,13 @@ export default function HealthLocker() {
 
   const Section = ({ title, type }) => (
     <>
-      <div className="section-title">
+      <div className="section-title" onClick={() => toggleSection(type)}>
         {title}
-        <span>▼</span>
+        <span>{openSections[type] ? "▲" : "▼"}</span>
       </div>
 
-      <div className="section-box">
+      {openSections[type] && (
+        <div className="section-box">
 
         <label className="upload-bar">
           + UPLOAD NEW DOCUMENT
@@ -99,24 +111,15 @@ export default function HealthLocker() {
           </div>
         ))}
 
-      </div>
+        </div>
+      )}
     </>
   );
 
   return (
     <div className="healthlocker-container page">
 
-      <DotGrid
-        dotSize={7}
-        gap={15}
-        baseColor="#271E37"
-        activeColor="#5227FF"
-        proximity={120}
-        shockRadius={250}
-        shockStrength={5}
-        resistance={750}
-        returnDuration={1.5}
-      />
+      
 
       <div className="content">
 <Header/>
@@ -125,7 +128,6 @@ export default function HealthLocker() {
         <Section title="PRESCRIPTION" type="prescription" />
         <Section title="LAB REPORTS" type="lab" />
         <Section title="INSURANCE DOCUMENTS" type="insurance" />
-<Footer/>
       </div>
 
       {preview && (

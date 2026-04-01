@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import Header from "../Components/FixedComponents/Header";
-import Footer from "../Components/FixedComponents/Footer";
 import "./DocMap.css";
 export default function DocMap() {
   const [iframeSrc, setIframeSrc] = useState("");
@@ -199,11 +198,7 @@ export default function DocMap() {
           </div>
         </div>
       </div>
-      <Footer />
-      <div className='cpr'>
-        ©2026 artika.life All rights reserved
-
-      </div>
+      
     </>
   );
 }

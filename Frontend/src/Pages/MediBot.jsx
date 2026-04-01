@@ -1,5 +1,7 @@
 import "./MediBot.css";
-import Prism from "../Components/Backgrounds/Prism"
+import Prism from "../Components/Backgrounds/Prism";
+import Header from "../Components/FixedComponents/Header";
+
 export default function MediBot() {
     return (
         <div className="care-container page">
@@ -14,6 +16,7 @@ export default function MediBot() {
                 noise={0}
                 glow={0.5}
             />
+            <Header />
             <div className="content">
                 <h1>MEDIBOT</h1>
             </div>

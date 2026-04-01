@@ -1,6 +1,9 @@
 import React from 'react';
 import './MediPlay.css';
-import DarkVeil from "../Components/Backgrounds/DarkVeil"
+import DarkVeil from "../Components/Backgrounds/DarkVeil";
+import Header from "../Components/FixedComponents/Header";
+import Footer from "../Components/FixedComponents/Footer";
+
 export default function MediPlay() {
     return (
         <div className="reminder-container page">
@@ -12,10 +15,11 @@ export default function MediPlay() {
                 scanlineFrequency={0}
                 warpAmount={0}
             />
+            <Header />
             <div className='content'>
                 <h1>MediPlay</h1>
             </div>
-            
+            <Footer />
         </div>
     );
 }
