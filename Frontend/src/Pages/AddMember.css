@@ -1,7 +1,7 @@
 .add-member-container {
   min-height: 100vh;
   width: 100%;
-  background: black;
+  background: #03080f;
   color: white;
   position: relative;
 }
@@ -84,7 +84,9 @@
   gap: 15px;
 }
 
-.inputs-section input, .inputs-section select, .med-grid input {
+.inputs-section input,
+.inputs-section select,
+.med-grid input {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.2);
   padding: 12px 15px;
@@ -100,13 +102,298 @@
 }
 
 .age-display {
-  background: #5227FF;
+  background: #5227ff;
   padding: 5px 12px;
   border-radius: 20px;
   font-size: 13px;
   font-weight: bold;
 }
 
+/* ── Growth Centre Toggle ─────────────────────────────── */
+.growth-toggle-wrapper {
+  margin: 10px 0 20px 0;
+}
+
+.growth-toggle-label {
+  cursor: pointer;
+  display: inline-block;
+}
+
+.custom-checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.custom-checkbox-input {
+  display: none;
+}
+
+.custom-checkbox-box {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid rgba(82, 39, 255, 0.7);
+  background: rgba(82, 39, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.custom-checkbox-box svg {
+  width: 12px;
+  height: 10px;
+}
+
+.custom-checkbox-input:checked + .custom-checkbox-box {
+  background: #5227ff;
+  border-color: #5227ff;
+  box-shadow: 0 0 10px rgba(82, 39, 255, 0.5);
+}
+
+.growth-toggle-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: #c9b9ff;
+  letter-spacing: 0.3px;
+  transition: color 0.2s;
+}
+
+.growth-toggle-label:hover .growth-toggle-text {
+  color: #fff;
+}
+
+.growth-toggle-label:hover .custom-checkbox-box {
+  border-color: #7a5cff;
+  box-shadow: 0 0 8px rgba(82, 39, 255, 0.35);
+}
+
+/* Vaccine Tracker checkbox — teal variant */
+.vaccine-box {
+  border-color: rgba(106, 255, 203, 0.6) !important;
+  background: rgba(106, 255, 203, 0.08) !important;
+}
+
+.custom-checkbox-input:checked + .vaccine-box {
+  background: #0abf7e !important;
+  border-color: #0abf7e !important;
+  box-shadow: 0 0 10px rgba(10, 191, 126, 0.5) !important;
+}
+
+.vaccine-toggle-text {
+  color: #6affcb !important;
+}
+
+.growth-toggle-label:hover .vaccine-toggle-text {
+  color: #fff !important;
+}
+
+.growth-toggle-label:hover .vaccine-box {
+  border-color: #6affcb !important;
+  box-shadow: 0 0 8px rgba(106, 255, 203, 0.35) !important;
+}
+
+/* Vaccine message banner */
+@keyframes popIn {
+  0%   { opacity: 0; transform: scale(0.85) translateY(6px); }
+  60%  { transform: scale(1.04) translateY(-2px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.vaccine-message {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 14px 20px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(10, 191, 126, 0.12), rgba(106, 255, 203, 0.07));
+  border: 1px solid rgba(106, 255, 203, 0.3);
+  animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.vaccine-message-emoji {
+  font-size: 28px;
+  line-height: 1;
+  animation: popIn 0.5s 0.1s both;
+}
+
+.vaccine-message p {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, #6affcb, #a0f0d0);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 0.5px;
+}
+
+/* ── Growth Centre Section ────────────────────────────── */
+@keyframes growthReveal {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.growth-centre-section {
+  background: rgba(82, 39, 255, 0.07);
+  border: 1px solid rgba(82, 39, 255, 0.3);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 24px;
+  animation: growthReveal 0.3s ease forwards;
+}
+
+.growth-centre-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.growth-centre-icon {
+  font-size: 22px;
+}
+
+.growth-centre-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  background: linear-gradient(90deg, #a992ff, #e0d9ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+}
+
+.growth-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 600px) {
+  .growth-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.growth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.growth-field-full {
+  grid-column: 1 / -1;
+}
+
+.growth-field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #a992ff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.growth-field input,
+.growth-field select {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(82, 39, 255, 0.35);
+  padding: 11px 14px;
+  border-radius: 12px;
+  color: white;
+  outline: none;
+  font-size: 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.growth-field input:focus,
+.growth-field select:focus {
+  border-color: rgba(82, 39, 255, 0.7);
+  box-shadow: 0 0 0 3px rgba(82, 39, 255, 0.15);
+}
+
+.growth-field select option {
+  background: #1a1a2e;
+  color: white;
+}
+
+/* ── Phone Number Field ───────────────────────────────── */
+.phone-field {
+  display: flex;
+  gap: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.phone-field:focus-within {
+  border-color: rgba(82, 39, 255, 0.7);
+  box-shadow: 0 0 0 3px rgba(82, 39, 255, 0.15);
+}
+
+.country-code-select {
+  background: rgba(82, 39, 255, 0.18);
+  border: none;
+  border-right: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 12px 10px;
+  color: white;
+  outline: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  min-width: 160px;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23aaa'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+}
+
+.country-code-select option {
+  background: #1a1030;
+  color: white;
+}
+
+.phone-number-input {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  flex: 1;
+  padding: 12px 15px !important;
+  color: white;
+  outline: none;
+  font-size: 14px;
+}
+
+.phone-number-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+@media (max-width: 480px) {
+  .phone-field {
+    flex-direction: column;
+  }
+  .country-code-select {
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    min-width: unset;
+  }
+}
+
+/* ── Medication Section ───────────────────────────────── */
 .medication-section {
   margin-top: 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -145,7 +432,7 @@
   padding: 15px;
   border-radius: 15px;
   border: none;
-  background: linear-gradient(45deg, #5227FF, #7A5CFF);
+  background: linear-gradient(45deg, #5227ff, #7a5cff);
   color: white;
   font-weight: bold;
   font-size: 1.1rem;
