@@ -9,6 +9,7 @@ import CurvedLoop from '../Components/FixedComponents/CurvedLoop';
 import ScrollReveal from '../Components/FixedComponents/ScrollReveal';
 import ScrollVelocity from '../Components/FixedComponents/ScrollVelocity';
 import ChromaGrid from '../Components/FixedComponents/ChromaGrid';
+import { useNavigate } from 'react-router-dom';
 import diwakar from "../assets/diwakar.png"
 import dhruv from "../assets/dhruv.png"
 import kavya from "../assets/kavya.png"
@@ -16,11 +17,20 @@ import CircularGallery from '../Components/FixedComponents/CircilarGallery';
 import TextPressure from '../Components/FixedComponents/TextPressure';
 
 export default function Home() {
+    const navigate = useNavigate();
     const handleAnimationComplete = () => {
         console.log('All letters have animated!');
-
     };
 
+    const handleGetStarted = () => {
+        const user = localStorage.getItem("user");
+        if (user) {
+            navigate("/user");
+        } else {
+            navigate("/login");
+        }
+    };
+    
     const items = [
         {
             image: diwakar,
@@ -89,8 +99,10 @@ export default function Home() {
                             </h1>
                         </div>
                         <div className='Buttons'>
-                            <button>Get Started</button>
-                            <button>Explore Features</button>
+                            <button onClick={handleGetStarted}>Get Started</button>
+                            <button onClick={() => document.getElementById('features').scrollIntoView({ behavior: 'smooth' })}>
+                                Explore Features
+                            </button>
                         </div>
                     </div>
                     <div className='sec2 sec'>
@@ -156,7 +168,7 @@ export default function Home() {
                     />
                 </div>
 
-                <div className='features'>
+                <div className='features' id='features'>
                     <CircularGallery
                         bend={0}
                         borderRadius={0.05}

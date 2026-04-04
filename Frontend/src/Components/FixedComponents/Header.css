@@ -35,8 +35,31 @@
     color: white;
     border-radius: 50%;
     height: 45px;
-    width: 30px;
+    width: 25px;
     font-size: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.logo-container {
+    background: transparent !important;
+    padding: 0 !important;
+    width: auto !important;
+    height: 90% !important;
+}
+
+.logo-img {
+    height: 45px;
+    width: auto;
+    border-radius: 50%;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+    display: block;
+}
+
+.logo-container:hover .logo-img {
+    transform: scale(1.05);
 }
 
 .type2{
@@ -102,6 +125,55 @@
 .hamburger{
     display: none;
 }
+
+.user-avatar-header {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #5227ff;
+}
+
+.profile-link {
+    padding: 0 !important;
+    width: 45px !important;
+    height: 45px !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.login-link {
+    font-size: 10px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.user_profile_section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logout-btn {
+    background: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    color: #444;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+    background: black;
+    color: white;
+}
+
 @media (max-width: 1115px){
 
     .Header_container{
