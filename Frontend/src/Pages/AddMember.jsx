@@ -3,17 +3,27 @@ import { useNavigate, useLocation } from "react-router-dom";
 import "./AddMember.css";
 import Header from "../Components/FixedComponents/Header";
 import Orb from "../Components/Backgrounds/Orb";
+import { auth, onAuthStateChanged } from "../firebase";
+
+const API_BASE = import.meta.env.VITE_API_URL;
 
 export default function AddMember() {
   const navigate = useNavigate();
   const location = useLocation();
   const editMember = location.state?.member;
 
+  // Format date for <input type="date">
+  const formatDate = (isoString) => {
+    if (!isoString) return "";
+    return new Date(isoString).toISOString().split("T")[0];
+  };
+
   const [formData, setFormData] = useState({
-    id: editMember?.id || "",
-    photo: editMember?.photo || "",
+    id: editMember?._id || "",
+    photo: editMember?.photoLink || "", // Use photoLink for preview
+    photoFile: null, // New field for the actual File object
     name: editMember?.name || "",
-    dob: editMember?.dob || "",
+    dob: editMember ? formatDate(editMember.dob) : "",
     age: editMember?.age || 0,
     category: editMember?.category || "Adult",
     sex: editMember?.sex || "Male",
@@ -21,21 +31,66 @@ export default function AddMember() {
     relation: editMember?.relation || "",
     phoneCountryCode: editMember?.phoneCountryCode || "+91",
     phoneNumber: editMember?.phoneNumber || "",
-    medication: editMember?.medication || "",
-    duration: editMember?.duration || "",
-    frequency: editMember?.frequency || 0,
-    times: editMember?.times || [],
+    medication: "",    // We'll fetch existing reminder later
+    duration: "",
+    frequency: 0,
+    times: [],
     // Growth Centre fields
-    weight: editMember?.weight || "",
-    height: editMember?.height || "",
-    bloodGroup: editMember?.bloodGroup || "",
-    allergies: editMember?.allergies || "",
+    weight: editMember?.growthData?.weight || "",
+    height: editMember?.growthData?.height || "",
+    bloodGroup: editMember?.growthData?.bloodGroup || "",
+    allergies: editMember?.growthData?.allergies || "",
   });
 
+  const [reminderId, setReminderId] = useState(null);
+
   const [showGrowthCentre, setShowGrowthCentre] = useState(
-    !!(editMember?.weight || editMember?.height || editMember?.bloodGroup || editMember?.allergies)
+    !!(editMember?.growthData?.weight || editMember?.growthData?.height || editMember?.growthData?.bloodGroup || editMember?.growthData?.allergies)
   );
   const [showVaccineTracker, setShowVaccineTracker] = useState(false);
+  const [currentUserEmail, setCurrentUserEmail] = useState("");
+  const [authLoading, setAuthLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+
+  // Get the logged-in user's email from Firebase
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setCurrentUserEmail(user.email || "");
+      } else {
+        setCurrentUserEmail("");
+      }
+      setAuthLoading(false);
+    });
+    return () => unsub();
+  }, []);
+
+  // Fetch reminder data if we are editing
+  useEffect(() => {
+    if (editMember?._id) {
+      const fetchReminder = async () => {
+        try {
+          const res = await fetch(`${API_BASE}/api/reminders/member/${editMember._id}`);
+          const json = await res.json();
+          if (json.success && json.data.length > 0) {
+            const r = json.data[0]; // Assuming one reminder per member for now
+            setReminderId(r._id);
+            setFormData(prev => ({
+              ...prev,
+              medication: r.medication || "",
+              duration: r.duration || "",
+              frequency: r.frequency || 0,
+              times: r.times || [],
+            }));
+          }
+        } catch (err) {
+          console.error("Error fetching reminder:", err);
+        }
+      };
+      fetchReminder();
+    }
+  }, [editMember]);
 
   const isKid = formData.category === "Kid";
   const isNewborn = formData.category === "Newborn";
@@ -86,6 +141,7 @@ export default function AddMember() {
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setFormData((prev) => ({ ...prev, photoFile: file }));
       const reader = new FileReader();
       reader.onloadend = () => {
         setFormData((prev) => ({ ...prev, photo: reader.result }));
@@ -94,39 +150,136 @@ export default function AddMember() {
     }
   };
 
-  const handleSubmit = (e) => {
+  // ── Default Vaccination List ─────────────────────────────────────────────
+  const getDefaultVaccines = () => [
+    { vaccineName: "BCG", recommendedTime: "At Birth", status: "Scheduled", isDone: false },
+    { vaccineName: "Hepatitis B (Birth)", recommendedTime: "Within 24 hours", status: "Scheduled", isDone: false },
+    { vaccineName: "OPV-0", recommendedTime: "Within 15 days", status: "Scheduled", isDone: false },
+    { vaccineName: "OPV-1", recommendedTime: "6 weeks", status: "Scheduled", isDone: false },
+    { vaccineName: "OPV-2", recommendedTime: "10 weeks", status: "Scheduled", isDone: false },
+    { vaccineName: "OPV-3", recommendedTime: "14 weeks", status: "Scheduled", isDone: false },
+    { vaccineName: "Pentavalent-1", recommendedTime: "6 weeks", status: "Scheduled", isDone: false },
+    { vaccineName: "Pentavalent-2", recommendedTime: "10 weeks", status: "Scheduled", isDone: false },
+    { vaccineName: "Pentavalent-3", recommendedTime: "14 weeks", status: "Scheduled", isDone: false },
+    { vaccineName: "Rotavirus-1", recommendedTime: "6 weeks", status: "Scheduled", isDone: false },
+    { vaccineName: "Rotavirus-2", recommendedTime: "10 weeks", status: "Scheduled", isDone: false },
+    { vaccineName: "Rotavirus-3", recommendedTime: "14 weeks", status: "Scheduled", isDone: false },
+    { vaccineName: "IPV-1", recommendedTime: "6 weeks", status: "Scheduled", isDone: false },
+    { vaccineName: "IPV-2", recommendedTime: "14 weeks", status: "Scheduled", isDone: false },
+    { vaccineName: "Measles / MR-1", recommendedTime: "9 months", status: "Scheduled", isDone: false },
+    { vaccineName: "JE-1", recommendedTime: "9 months", status: "Scheduled", isDone: false },
+    { vaccineName: "Vitamin A (1st dose)", recommendedTime: "9 months", status: "Scheduled", isDone: false },
+    { vaccineName: "DPT Booster-1", recommendedTime: "16-24 months", status: "Scheduled", isDone: false },
+    { vaccineName: "MR-2", recommendedTime: "16-24 months", status: "Scheduled", isDone: false },
+    { vaccineName: "OPV Booster", recommendedTime: "16-24 months", status: "Scheduled", isDone: false },
+    { vaccineName: "JE-2", recommendedTime: "16-24 months", status: "Scheduled", isDone: false },
+    { vaccineName: "Vitamin A (2nd dose)", recommendedTime: "16-18 months", status: "Scheduled", isDone: false },
+  ];
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const members = JSON.parse(localStorage.getItem("familyMembers") || "[]");
+    if (!currentUserEmail) {
+      setSubmitError("You must be logged in to add a member.");
+      return;
+    }
+    setSubmitting(true);
+    setSubmitError("");
 
-    const dataToSave = {
-      ...formData,
-      weight: showGrowthCentre ? formData.weight : "",
-      height: showGrowthCentre ? formData.height : "",
-      bloodGroup: showGrowthCentre ? formData.bloodGroup : "",
-      allergies: showGrowthCentre ? formData.allergies : "",
-    };
+    // ── Build FormData (required for multi-part file upload) ──────
+    const fd = new FormData();
+    fd.append("userEmail", currentUserEmail);
+    fd.append("name", formData.name);
+    fd.append("relation", formData.relation);
+    fd.append("dob", formData.dob);
+    fd.append("age", formData.age);
+    fd.append("sex", formData.sex);
+    fd.append("category", formData.category);
+    fd.append("phoneCountryCode", formData.phoneCountryCode);
+    fd.append("phoneNumber", formData.phoneNumber);
+    fd.append("address", formData.address);
 
-    if (editMember) {
-      const index = members.findIndex((m) => m.id === editMember.id);
-      members[index] = dataToSave;
-    } else {
-      // Generate sequential ID: ART001, ART002 ...
-      const maxNum = members.reduce((max, m) => {
-        const num = parseInt((m.id || "").replace("ART", ""), 10);
-        return isNaN(num) ? max : Math.max(max, num);
-      }, 0);
-      const nextNum = String(maxNum + 1).padStart(3, "0");
-      const newMember = {
-        ...dataToSave,
-        id: "ART" + nextNum,
-      };
-      members.push(newMember);
+    // Profile photo file
+    if (formData.photoFile) {
+      fd.append("photo", formData.photoFile);
     }
 
-    localStorage.setItem("familyMembers", JSON.stringify(members));
-    alert(editMember ? "Member Updated!" : "Member Added!");
-    navigate("/user");
+    // Growth Data (nested as string)
+    if (showGrowthCentre) {
+      const gd = {
+        weight: formData.weight ? parseFloat(formData.weight) : null,
+        height: formData.height ? parseFloat(formData.height) : null,
+        bloodGroup: formData.bloodGroup || "",
+        allergies: formData.allergies || "",
+      };
+      fd.append("growthData", JSON.stringify(gd));
+    }
+
+    // Vaccinations & Health Locker (nested as strings)
+    const vaccs = !editMember && isNewborn && showVaccineTracker ? getDefaultVaccines() : (editMember?.vaccinations || []);
+    fd.append("vaccinations", JSON.stringify(vaccs));
+    fd.append("healthLocker", JSON.stringify(editMember?.healthLocker || []));
+
+    try {
+      let url = `${API_BASE}/api/members`;
+      let method = "POST";
+
+      if (editMember?._id) {
+        url = `${API_BASE}/api/members/${editMember._id}`;
+        method = "PUT";
+      }
+
+      const res = await fetch(url, {
+        method,
+        body: fd, // Send FormData instead of JSON stringly
+        // Do NOT set Content-Type header, browser will set it with boundary
+      });
+
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || "Failed to save member");
+
+      const savedMemberId = editMember?._id || json.data._id;
+
+      // Handle Medication Reminder Saving/Updating
+      if (formData.medication && formData.frequency > 0) {
+        const reminderData = {
+          memberId: savedMemberId,
+          medication: formData.medication,
+          duration: parseInt(formData.duration) || 1,
+          frequency: formData.frequency,
+          times: formData.times,
+        };
+
+        if (reminderId) {
+          // Update existing reminder
+          await fetch(`${API_BASE}/api/reminders/${reminderId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(reminderData),
+          });
+        } else {
+          // Create new reminder
+          await fetch(`${API_BASE}/api/reminders`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(reminderData),
+          });
+        }
+      } else if (reminderId) {
+        // If they cleared the medication info, delete the existing reminder
+        await fetch(`${API_BASE}/api/reminders/${reminderId}`, {
+          method: "DELETE",
+        });
+      }
+
+      alert(editMember ? "Member Updated!" : "Member Added!");
+      navigate("/user");
+    } catch (err) {
+      setSubmitError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
   };
+
 
   return (
     <div className="add-member-container page">
@@ -139,7 +292,7 @@ export default function AddMember() {
       />
 
       <Header />
-      <div className="content">
+      <div className={`content ${!currentUserEmail && !authLoading ? "blurred-content" : ""}`}>
         <div className="form-card">
           <h2>{editMember ? "Update Member" : "Add New Family Member"}</h2>
           <form onSubmit={handleSubmit}>
@@ -477,12 +630,31 @@ export default function AddMember() {
               )}
             </div>
 
-            <button type="submit" className="submit-btn">
-              {editMember ? "Save Changes" : "Register Member"}
+            {submitError && (
+              <p style={{ color: "#ff6b6b", marginBottom: "0.75rem", fontWeight: 500 }}>
+                ⚠ {submitError}
+              </p>
+            )}
+            <button type="submit" className="submit-btn" disabled={submitting}>
+              {submitting ? "Saving…" : editMember ? "Save Changes" : "Register Member"}
             </button>
           </form>
         </div>
       </div>
+
+      {/* Login Requirement Overlay */}
+      {!currentUserEmail && !authLoading && (
+        <div className="login-overlay">
+          <div className="login-overlay-card">
+            <div className="lock-icon">🔒</div>
+            <h2>Authentication Required</h2>
+            <p>You must log in before adding a member and experiencing all features of Artika.life</p>
+            <button className="login-redirect-btn" onClick={() => navigate("/login")}>
+              Go to Login
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

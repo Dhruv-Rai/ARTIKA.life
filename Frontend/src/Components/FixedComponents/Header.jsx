@@ -121,7 +121,14 @@ export default function Header() {
             {user ? (
                 <div className="user_profile_section">
                     <Link to="/user" className="type1 list_item profile-link">
-                        <img src={user.picture} alt={user.name} className="user-avatar-header" />
+                        <img 
+                            src={user.picture} 
+                            alt={user.name} 
+                            className="user-avatar-header" 
+                            onError={(e) => {
+                                e.target.src = `https://ui-avatars.com/api/?name=${user.name}&background=random`;
+                            }}
+                        />
                     </Link>
                     <button onClick={handleLogout} className="logout-btn">Logout</button>
                 </div>

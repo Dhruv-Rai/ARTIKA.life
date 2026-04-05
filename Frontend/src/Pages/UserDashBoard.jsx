@@ -3,43 +3,88 @@ import { useNavigate } from "react-router-dom";
 import "./UserDashBoard.css";
 import Header from "../Components/FixedComponents/Header";
 import Orb from "../Components/Backgrounds/Orb";
+import { auth, onAuthStateChanged } from "../firebase";
+
+const API_BASE = import.meta.env.VITE_API_URL;
 
 export default function UserDashBoard() {
   const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentUserEmail, setCurrentUserEmail] = useState("");
   const navigate = useNavigate();
 
+  // 1. Get logged-in user's email from Firebase
   useEffect(() => {
-    const savedMembers = JSON.parse(localStorage.getItem("familyMembers") || "[]");
-    setMembers(savedMembers);
+    const unsub = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setCurrentUserEmail(user.email || "");
+      } else {
+        setCurrentUserEmail("");
+        setMembers([]);
+        setLoading(false);
+      }
+    });
+    return () => unsub();
   }, []);
 
-  const deleteMember = (id) => {
-    if (window.confirm("Are you sure you want to delete this member?")) {
-      const updated = members.filter((m) => m.id !== id);
-      setMembers(updated);
-      localStorage.setItem("familyMembers", JSON.stringify(updated));
+  // 2. Fetch members from MongoDB whenever we know the user's email
+  useEffect(() => {
+    if (!currentUserEmail) return;
+
+    const fetchMembers = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(
+          `${API_BASE}/api/members?userEmail=${encodeURIComponent(currentUserEmail)}`
+        );
+        const json = await res.json();
+        if (json.success) setMembers(json.data);
+        else console.error("Failed to load members:", json.message);
+      } catch (err) {
+        console.error("Network error fetching members:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMembers();
+  }, [currentUserEmail]);
+
+  // 3. Delete via API, then remove from local state
+  const deleteMember = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this member?")) return;
+    try {
+      const res = await fetch(
+        `${API_BASE}/api/members/${id}?userEmail=${encodeURIComponent(currentUserEmail)}`,
+        { method: "DELETE" }
+      );
+      const json = await res.json();
+      if (json.success) {
+        setMembers((prev) => prev.filter((m) => m._id !== id));
+      } else {
+        alert("Delete failed: " + json.message);
+      }
+    } catch (err) {
+      alert("Network error: " + err.message);
     }
   };
 
+  // 4. Navigate to edit page – pass the full member object (uses _id for PUT)
   const updateMember = (member) => {
     navigate("/add", { state: { member } });
   };
 
-  const adults = members.filter(
-    (m) => m.category === "Adult"
-  );
-  const kids = members.filter(
-    (m) => m.category === "Kid" || m.category === "Newborn"
-  );
+  const adults = members.filter((m) => m.category === "Adult");
+  const kids   = members.filter((m) => m.category === "Kid" || m.category === "Newborn");
 
   const MemberCard = ({ member }) => (
-    <div className="member-card" key={member.id}>
-      <div className="card-id">ID: {member.id}</div>
+    <div className="member-card" key={member._id}>
+      <div className="card-id">ID: {member._id?.slice(-6).toUpperCase()}</div>
       <div
         className="card-photo"
-        style={{ backgroundImage: `url(${member.photo})` }}
+        style={{ backgroundImage: `url(${member.photoLink})` }}
       >
-        {!member.photo && "👤"}
+        {!member.photoLink && "👤"}
       </div>
       <div className="card-info">
         <h3>{member.name}</h3>
@@ -48,38 +93,26 @@ export default function UserDashBoard() {
           <p>
             <strong>Age:</strong> {member.age} yrs ({member.category})
           </p>
-          <p>
-            <strong>Medication:</strong> {member.medication || "None"}
-          </p>
-          {member.medication && (
-            <p className="med-time">
-              ⏰ {member.frequency}x daily for {member.duration} days
-            </p>
-          )}
           {/* Growth Centre Info for Kids */}
           {(member.category === "Kid" || member.category === "Newborn") &&
-            (member.weight || member.height || member.bloodGroup || member.allergies) && (
+            member.growthData &&
+            (member.growthData.weight ||
+              member.growthData.height ||
+              member.growthData.bloodGroup ||
+              member.growthData.allergies) && (
               <div className="growth-info">
                 <p className="growth-info-title">🌱 Growth Centre</p>
-                {member.weight && (
-                  <p>
-                    <strong>Weight:</strong> {member.weight} kg
-                  </p>
+                {member.growthData.weight && (
+                  <p><strong>Weight:</strong> {member.growthData.weight} kg</p>
                 )}
-                {member.height && (
-                  <p>
-                    <strong>Height:</strong> {member.height} cm
-                  </p>
+                {member.growthData.height && (
+                  <p><strong>Height:</strong> {member.growthData.height} cm</p>
                 )}
-                {member.bloodGroup && (
-                  <p>
-                    <strong>Blood Group:</strong> {member.bloodGroup}
-                  </p>
+                {member.growthData.bloodGroup && (
+                  <p><strong>Blood Group:</strong> {member.growthData.bloodGroup}</p>
                 )}
-                {member.allergies && (
-                  <p>
-                    <strong>Allergies:</strong> {member.allergies}
-                  </p>
+                {member.growthData.allergies && (
+                  <p><strong>Allergies:</strong> {member.growthData.allergies}</p>
                 )}
               </div>
             )}
@@ -89,7 +122,22 @@ export default function UserDashBoard() {
         <button className="edit-btn" onClick={() => updateMember(member)}>
           Update
         </button>
-        <button className="del-btn" onClick={() => deleteMember(member.id)}>
+        {/* Tracker Button for Kids/Newborns */}
+        {(member.category === "Kid" || member.category === "Newborn") && (
+          <button
+            className="tracker-btn"
+            onClick={() => navigate("/vaccine", { state: { member } })}
+          >
+            Tracker
+          </button>
+        )}
+        <button
+            className="tracker-btn locker-btn"
+            onClick={() => navigate("/hl", { state: { member } })}
+          >
+            Locker
+        </button>
+        <button className="del-btn" onClick={() => deleteMember(member._id)}>
           Delete
         </button>
       </div>
@@ -121,7 +169,11 @@ export default function UserDashBoard() {
           </div>
         </div>
 
-        {members.length === 0 ? (
+        {loading ? (
+          <div className="no-members"><p>Loading members…</p></div>
+        ) : !currentUserEmail ? (
+          <div className="no-members"><p>Please log in to view your family members.</p></div>
+        ) : members.length === 0 ? (
           <div className="no-members">
             <p>No family members added yet.</p>
           </div>
@@ -136,7 +188,7 @@ export default function UserDashBoard() {
               <div className="member-grid adults-grid">
                 {adults.length > 0 ? (
                   adults.map((member) => (
-                    <MemberCard key={member.id} member={member} />
+                    <MemberCard key={member._id} member={member} />
                   ))
                 ) : (
                   <div className="section-empty">No adults added yet.</div>
@@ -153,7 +205,7 @@ export default function UserDashBoard() {
               <div className="member-grid kids-grid">
                 {kids.length > 0 ? (
                   kids.map((member) => (
-                    <MemberCard key={member.id} member={member} />
+                    <MemberCard key={member._id} member={member} />
                   ))
                 ) : (
                   <div className="section-empty">No kids added yet.</div>
